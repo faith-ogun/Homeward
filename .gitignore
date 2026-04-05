@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Environment variables
+.env
+
+# Project reference docs (local only)
+CLAUDE.md
+HACKATHON.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.claude/
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ngrok
+ngrok.yml
+
+# Distribution
+*.tar.gz
+*.whl
