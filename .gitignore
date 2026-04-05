@@ -41,6 +41,11 @@ htmlcov/
 # ngrok
 ngrok.yml
 
+# Local research / competition analysis (not for repo)
+competition/
+other/
+audit/
+
 # Distribution
 *.tar.gz
 *.whl
