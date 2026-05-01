@@ -1,15 +1,34 @@
 """
 Skill 1: Discharge Note Interpreter
 
-Reads discharge instructions and FHIR patient context to produce structured
-recovery expectations including procedure-specific timelines, medication
-schedules, and red-flag symptoms.
+Returns the canonical, evidence-based recovery timeline for a given procedure
+and computes which phase the patient is currently in based on their surgery date.
+
+The deterministic procedure data comes from data/procedures.py. The LLM caller
+combines this structured timeline with the free-text discharge_text it was
+given to produce a fully personalised summary (medications, schedules,
+patient-specific restrictions extracted from the note itself).
 """
 import logging
+from datetime import date, datetime
 
 from google.adk.tools import ToolContext
 
+from data.procedures import find_procedure, get_timeline_phase, list_procedure_names
+
 logger = logging.getLogger(__name__)
+
+
+def _parse_date(date_str: str) -> date | None:
+    """Parse YYYY-MM-DD or DD/MM/YYYY. Return None if unparseable."""
+    if not date_str:
+        return None
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(date_str.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def interpret_discharge_note(
@@ -19,65 +38,69 @@ def interpret_discharge_note(
     tool_context: ToolContext,
 ) -> dict:
     """
-    Interprets a discharge note and returns structured recovery expectations.
+    Returns the structured recovery timeline for a procedure plus the patient's
+    current post-op phase based on the surgery date.
 
     Args:
-        procedure_name: The type of surgical procedure performed
-            (e.g. 'Robotic Prostatectomy', 'Laparoscopic Cholecystectomy').
-        surgery_date: Date of the surgery in YYYY-MM-DD format.
-        discharge_text: The full text content of the discharge instructions document.
+        procedure_name: Surgical procedure name or alias
+            (e.g. 'Robotic Prostatectomy', 'lap chole', 'TKR').
+        surgery_date: Date of surgery in YYYY-MM-DD format.
+        discharge_text: Full text of the discharge instructions document.
+            (Returned to the caller for cross-reference; the LLM extracts
+            medication schedules and patient-specific instructions from it.)
 
-    Returns a structured dictionary with recovery timeline, medications,
-    red-flag symptoms, and follow-up information.
+    Returns structured timeline, current phase, red flags, and discharge text excerpt.
     """
     patient_id = tool_context.state.get("patient_id", "unknown")
     logger.info(
-        "tool_interpret_discharge_note patient_id=%s procedure=%s surgery_date=%s",
-        patient_id, procedure_name, surgery_date,
+        "tool_interpret_discharge_note patient_id=%s procedure=%s surgery_date=%s text_len=%d",
+        patient_id, procedure_name, surgery_date, len(discharge_text or ""),
     )
 
-    # TODO: Replace with real implementation that uses:
-    # 1. data/procedures.py for procedure-specific recovery timelines
-    # 2. LLM to interpret the discharge_text
-    # 3. FHIR MedicationRequest data for the medication list
+    proc = find_procedure(procedure_name)
+    if not proc:
+        return {
+            "status": "procedure_not_found",
+            "patient_id": patient_id,
+            "requested_procedure": procedure_name,
+            "supported_procedures": list_procedure_names(),
+            "message": (
+                f"Procedure '{procedure_name}' is not in the supported list. "
+                f"Recovery timeline cannot be retrieved without a recognised procedure."
+            ),
+        }
+
+    surgery_dt = _parse_date(surgery_date)
+    today = date.today()
+
+    if surgery_dt:
+        post_op_day = (today - surgery_dt).days
+    else:
+        post_op_day = None
+
+    current_phase = None
+    if post_op_day is not None and post_op_day >= 0:
+        current_phase = get_timeline_phase(proc["display_name"], post_op_day)
 
     return {
         "status": "success",
-        "procedure": procedure_name,
-        "surgery_date": surgery_date,
         "patient_id": patient_id,
-        "recovery_timeline": {
-            "days_1_3": {
-                "expected_pain_range": [4, 7],
-                "expected_pain_trend": "declining",
-                "mobility": "Short walks, avoid stairs",
-                "key_instructions": ["Wound care", "Ice application 20min on/off"],
-            },
-            "days_4_7": {
-                "expected_pain_range": [2, 5],
-                "expected_pain_trend": "declining",
-                "mobility": "Gradual increase, light activity",
-                "key_instructions": ["Transition to oral pain management"],
-            },
-            "days_8_14": {
-                "expected_pain_range": [1, 3],
-                "expected_pain_trend": "minimal",
-                "mobility": "Normal walking, no heavy lifting >10lbs",
-                "key_instructions": ["Follow-up appointment"],
-            },
-        },
-        "medications": [
-            {"name": "Codeine 30mg", "schedule": "Every 6 hours as needed", "purpose": "Pain"},
-            {"name": "Enoxaparin 40mg", "schedule": "Once daily for 14 days", "purpose": "Anticoagulation"},
-            {"name": "Ondansetron 4mg", "schedule": "As needed", "purpose": "Anti-nausea"},
-        ],
-        "red_flags": [
-            "Fever >38°C / 100.4°F",
-            "Increasing pain after day 3",
-            "Wound redness, swelling, or drainage",
-            "Blood clots in urine",
-            "Chest pain or shortness of breath",
-        ],
-        "follow_up": "Follow-up appointment in 2 weeks",
-        "note": "This is a stub response. Full implementation will use procedure-specific recovery data and LLM interpretation.",
+        "procedure": proc["display_name"],
+        "surgery_date": surgery_date,
+        "today": today.isoformat(),
+        "post_op_day": post_op_day,
+        "typical_recovery_days": proc["typical_recovery_days"],
+        "typical_hospital_stay_days": proc["typical_hospital_stay_days"],
+        "typical_medications": proc["typical_medications"],
+        "current_phase": current_phase,
+        "full_recovery_timeline": proc["timeline"],
+        "red_flags": proc["red_flags"],
+        "discharge_text_excerpt": (discharge_text or "")[:2000],
+        "discharge_text_length": len(discharge_text or ""),
+        "guidance_for_caller": (
+            "Use the discharge_text_excerpt to extract patient-specific medication "
+            "schedules, dose instructions, follow-up dates, and any restrictions that "
+            "are unique to this patient. Combine with the deterministic full_recovery_timeline "
+            "and red_flags above for the personalised summary."
+        ),
     }
