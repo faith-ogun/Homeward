@@ -1,0 +1,29 @@
+{
+  "patient_id": "patient-001",
+  "patient_name": "James Mercer",
+  "panel": "Homeward PGx Panel v1",
+  "report_date": "2026-04-20",
+  "scenario_label": "CYP2D6 Poor Metabolizer — Codeine Flag Demo",
+  "results": {
+    "CYP2D6": {
+      "diplotype": "*4/*4",
+      "phenotype": "Poor Metabolizer",
+      "activity_score": 0.0,
+      "clinvar": "Pathogenic (CYP2D6*4 — VCV000018068)",
+      "interpretation": "Patient cannot O-demethylate codeine to morphine. Codeine and tramadol will be ineffective."
+    },
+    "CYP2C19": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C9":  {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "VKORC1":  {"genotype": "GG", "phenotype": "Normal Sensitivity",   "clinvar": "Benign"},
+    "DPYD":    {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"}
+  },
+  "actionable_flags_for_post_op_meds": [
+    {
+      "drug": "Codeine",
+      "gene": "CYP2D6",
+      "phenotype": "Poor Metabolizer",
+      "risk": "HIGH",
+      "recommendation": "Avoid codeine. Use morphine, oxycodone, acetaminophen, or NSAID."
+    }
+  ]
+}

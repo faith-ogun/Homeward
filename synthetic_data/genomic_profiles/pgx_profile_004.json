@@ -1,0 +1,40 @@
+{
+  "patient_id": "patient-004",
+  "patient_name": "Anya Petrov",
+  "panel": "Homeward PGx Panel v1",
+  "report_date": "2026-04-10",
+  "scenario_label": "CYP2C9 Poor Metabolizer + VKORC1 Sensitive — Warfarin Dose Sensitivity Demo",
+  "results": {
+    "CYP2D6": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C19": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C9": {
+      "diplotype": "*2/*3",
+      "phenotype": "Poor Metabolizer",
+      "clinvar": "Drug Response (CYP2C9*2 — VCV000018063; CYP2C9*3 — VCV000018064)",
+      "interpretation": "Markedly reduced warfarin clearance. Combined with VKORC1, expected stable dose is substantially lower than population average."
+    },
+    "VKORC1": {
+      "genotype": "AG",
+      "phenotype": "Intermediate Sensitivity",
+      "clinvar": "Drug Response (VKORC1 -1639G>A — VCV000016901)",
+      "interpretation": "Reduced VKORC1 expression. Increased warfarin sensitivity."
+    },
+    "DPYD": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"}
+  },
+  "actionable_flags_for_post_op_meds": [
+    {
+      "drug": "Warfarin",
+      "gene": "CYP2C9",
+      "phenotype": "Poor Metabolizer",
+      "risk": "HIGH",
+      "recommendation": "Reduce initial warfarin dose by 50–80%. Use IWPC/Gage pharmacogenomic dosing algorithm. Monitor INR closely during initiation."
+    },
+    {
+      "drug": "Warfarin",
+      "gene": "VKORC1",
+      "phenotype": "Intermediate Sensitivity",
+      "risk": "MODERATE",
+      "recommendation": "Reduce dose moderately. Monitor INR closely."
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "resourceType": "Bundle",
+  "id": "patient-002-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-002",
+        "identifier": [{"system": "http://homeward.demo/mrn", "value": "HW-002"}],
+        "name": [{"family": "O'Connor", "given": ["Niamh"], "use": "official"}],
+        "gender": "female",
+        "birthDate": "1985-07-22",
+        "address": [{"city": "Cork", "country": "IE"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "procedure-002",
+        "status": "completed",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "45595009", "display": "Laparoscopic cholecystectomy"}],
+          "text": "Laparoscopic Cholecystectomy"
+        },
+        "subject": {"reference": "Patient/patient-002"},
+        "performedDateTime": "2026-04-28T11:00:00+00:00",
+        "reasonCode": [{"text": "Symptomatic cholelithiasis"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-002",
+        "subject": {"reference": "Patient/patient-002"},
+        "code": {"text": "Cholelithiasis with biliary colic"},
+        "clinicalStatus": {"coding": [{"code": "resolved"}]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-002-acetaminophen",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Acetaminophen 500mg"},
+        "subject": {"reference": "Patient/patient-002"},
+        "dosageInstruction": [{"text": "500-1000 mg orally every 6 hours as needed for pain (max 3g/day)"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-002-ibuprofen",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Ibuprofen 400mg"},
+        "subject": {"reference": "Patient/patient-002"},
+        "dosageInstruction": [{"text": "400 mg orally every 8 hours with food"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-002-ondansetron",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Ondansetron 4mg"},
+        "subject": {"reference": "Patient/patient-002"},
+        "dosageInstruction": [{"text": "4 mg orally every 8 hours as needed for nausea"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "pgx-report-002",
+        "status": "final",
+        "category": [{"coding": [{"code": "GE", "display": "Genetics"}]}],
+        "code": {"text": "Pharmacogenomic Panel"},
+        "subject": {"reference": "Patient/patient-002"},
+        "effectiveDateTime": "2026-04-20",
+        "conclusion": "CYP2D6 *1/*1 (Normal Metabolizer). CYP2C19 *1/*1 (Normal Metabolizer). CYP2C9 *1/*1 (Normal). VKORC1 -1639 GG. DPYD wild-type. No actionable PGx findings."
+      }
+    }
+  ]
+}

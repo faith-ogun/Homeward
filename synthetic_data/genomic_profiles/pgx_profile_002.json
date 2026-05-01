@@ -1,0 +1,15 @@
+{
+  "patient_id": "patient-002",
+  "patient_name": "Niamh O'Connor",
+  "panel": "Homeward PGx Panel v1",
+  "report_date": "2026-04-20",
+  "scenario_label": "Normal Metabolizer Across All Tested Genes — Clean Recovery Demo",
+  "results": {
+    "CYP2D6": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C19": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C9":  {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "VKORC1":  {"genotype": "GG", "phenotype": "Normal Sensitivity",   "clinvar": "Benign"},
+    "DPYD":    {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"}
+  },
+  "actionable_flags_for_post_op_meds": []
+}

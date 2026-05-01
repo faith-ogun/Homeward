@@ -1,0 +1,86 @@
+{
+  "resourceType": "Bundle",
+  "id": "patient-001-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-001",
+        "identifier": [{"system": "http://homeward.demo/mrn", "value": "HW-001"}],
+        "name": [{"family": "Mercer", "given": ["James"], "use": "official"}],
+        "gender": "male",
+        "birthDate": "1962-03-14",
+        "address": [{"city": "Dublin", "country": "IE"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "procedure-001",
+        "status": "completed",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "176106009", "display": "Robotic-assisted laparoscopic radical prostatectomy"}],
+          "text": "Robotic Prostatectomy (da Vinci)"
+        },
+        "subject": {"reference": "Patient/patient-001"},
+        "performedDateTime": "2026-04-27T08:30:00+00:00",
+        "reasonCode": [{"text": "Localised prostate adenocarcinoma, Gleason 3+4"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-001",
+        "subject": {"reference": "Patient/patient-001"},
+        "code": {"text": "Prostate adenocarcinoma, localised"},
+        "clinicalStatus": {"coding": [{"code": "active"}]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-001-codeine",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Codeine phosphate 30mg"},
+        "subject": {"reference": "Patient/patient-001"},
+        "dosageInstruction": [{"text": "30 mg orally every 6 hours as needed for pain"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-001-enoxaparin",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Enoxaparin 40mg"},
+        "subject": {"reference": "Patient/patient-001"},
+        "dosageInstruction": [{"text": "40 mg subcutaneously once daily for 14 days"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-001-ondansetron",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Ondansetron 4mg"},
+        "subject": {"reference": "Patient/patient-001"},
+        "dosageInstruction": [{"text": "4 mg orally every 8 hours as needed for nausea"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "pgx-report-001",
+        "status": "final",
+        "category": [{"coding": [{"code": "GE", "display": "Genetics"}]}],
+        "code": {"text": "Pharmacogenomic Panel"},
+        "subject": {"reference": "Patient/patient-001"},
+        "effectiveDateTime": "2026-04-20",
+        "conclusion": "CYP2D6 *4/*4 (Poor Metabolizer). CYP2C19 *1/*1 (Normal Metabolizer). CYP2C9 *1/*1 (Normal). VKORC1 -1639 GG (Normal Sensitivity). DPYD wild-type."
+      }
+    }
+  ]
+}

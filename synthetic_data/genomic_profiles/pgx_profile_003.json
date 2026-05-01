@@ -1,0 +1,21 @@
+{
+  "patient_id": "patient-003",
+  "patient_name": "Folarin Adeyemi",
+  "panel": "Homeward PGx Panel v1",
+  "report_date": "2026-04-15",
+  "scenario_label": "CYP2C19 Rapid Metabolizer — No Actionable Flag (True Surgical Complication Demo)",
+  "results": {
+    "CYP2D6": {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "CYP2C19": {
+      "diplotype": "*1/*17",
+      "phenotype": "Rapid Metabolizer",
+      "clinvar": "Drug Response (CYP2C19*17 — VCV000016900)",
+      "interpretation": "Increased CYP2C19 activity. No actionable interaction with current post-op medications (no clopidogrel prescribed)."
+    },
+    "CYP2C9":  {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"},
+    "VKORC1":  {"genotype": "GG", "phenotype": "Normal Sensitivity",   "clinvar": "Benign"},
+    "DPYD":    {"diplotype": "*1/*1", "phenotype": "Normal Metabolizer", "clinvar": "Benign"}
+  },
+  "actionable_flags_for_post_op_meds": [],
+  "demo_note": "This patient's elevated pain + fever + spreading redness should be classified as a true surgical site infection — not a PGx issue. Used to demonstrate that Homeward correctly distinguishes infection from medication inefficacy."
+}

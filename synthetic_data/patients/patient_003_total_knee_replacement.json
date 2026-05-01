@@ -1,0 +1,97 @@
+{
+  "resourceType": "Bundle",
+  "id": "patient-003-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-003",
+        "identifier": [{"system": "http://homeward.demo/mrn", "value": "HW-003"}],
+        "name": [{"family": "Adeyemi", "given": ["Folarin"], "use": "official"}],
+        "gender": "male",
+        "birthDate": "1956-11-08",
+        "address": [{"city": "Galway", "country": "IE"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "procedure-003",
+        "status": "completed",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "609588000", "display": "Total knee replacement"}],
+          "text": "Robotic-assisted Total Knee Replacement (right)"
+        },
+        "subject": {"reference": "Patient/patient-003"},
+        "performedDateTime": "2026-04-26T09:15:00+00:00",
+        "reasonCode": [{"text": "Severe osteoarthritis, right knee"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-003",
+        "subject": {"reference": "Patient/patient-003"},
+        "code": {"text": "Osteoarthritis, right knee, end-stage"},
+        "clinicalStatus": {"coding": [{"code": "active"}]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-003-oxycodone",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Oxycodone 5mg"},
+        "subject": {"reference": "Patient/patient-003"},
+        "dosageInstruction": [{"text": "5 mg orally every 6 hours as needed for pain"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-003-enoxaparin",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Enoxaparin 40mg"},
+        "subject": {"reference": "Patient/patient-003"},
+        "dosageInstruction": [{"text": "40 mg subcutaneously once daily for 28 days"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-003-cefazolin",
+        "status": "completed",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Cefazolin 1g"},
+        "subject": {"reference": "Patient/patient-003"},
+        "dosageInstruction": [{"text": "1 g IV every 8 hours x 3 doses (peri-operative)"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-003-acetaminophen",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Acetaminophen 1000mg"},
+        "subject": {"reference": "Patient/patient-003"},
+        "dosageInstruction": [{"text": "1 g orally every 6 hours scheduled"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "pgx-report-003",
+        "status": "final",
+        "category": [{"coding": [{"code": "GE", "display": "Genetics"}]}],
+        "code": {"text": "Pharmacogenomic Panel"},
+        "subject": {"reference": "Patient/patient-003"},
+        "effectiveDateTime": "2026-04-15",
+        "conclusion": "CYP2C19 *1/*17 (Rapid Metabolizer) — no actionable flag for current meds. CYP2D6 *1/*1 (Normal). CYP2C9 *1/*1. VKORC1 -1639 GG. DPYD wild-type."
+      }
+    }
+  ]
+}

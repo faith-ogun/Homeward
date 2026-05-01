@@ -1,0 +1,95 @@
+{
+  "resourceType": "Bundle",
+  "id": "patient-004-bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-004",
+        "identifier": [{"system": "http://homeward.demo/mrn", "value": "HW-004"}],
+        "name": [{"family": "Petrov", "given": ["Anya"], "use": "official"}],
+        "gender": "female",
+        "birthDate": "1949-02-19",
+        "address": [{"city": "Limerick", "country": "IE"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "procedure-004",
+        "status": "completed",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "26390003", "display": "Robotic colectomy"}],
+          "text": "Robotic Sigmoid Colectomy"
+        },
+        "subject": {"reference": "Patient/patient-004"},
+        "performedDateTime": "2026-04-24T07:45:00+00:00",
+        "reasonCode": [{"text": "Sigmoid adenocarcinoma, T3N0"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-004-afib",
+        "subject": {"reference": "Patient/patient-004"},
+        "code": {"text": "Atrial fibrillation, chronic"},
+        "clinicalStatus": {"coding": [{"code": "active"}]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-004-cancer",
+        "subject": {"reference": "Patient/patient-004"},
+        "code": {"text": "Sigmoid adenocarcinoma"},
+        "clinicalStatus": {"coding": [{"code": "active"}]}
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-004-warfarin",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Warfarin 5mg"},
+        "subject": {"reference": "Patient/patient-004"},
+        "dosageInstruction": [{"text": "5 mg orally once daily — adjust per INR (target 2-3, atrial fibrillation)"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-004-acetaminophen",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Acetaminophen 500mg"},
+        "subject": {"reference": "Patient/patient-004"},
+        "dosageInstruction": [{"text": "500 mg orally every 6 hours as needed for pain"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-004-docusate",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {"text": "Docusate sodium 100mg"},
+        "subject": {"reference": "Patient/patient-004"},
+        "dosageInstruction": [{"text": "100 mg orally twice daily"}]
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "pgx-report-004",
+        "status": "final",
+        "category": [{"coding": [{"code": "GE", "display": "Genetics"}]}],
+        "code": {"text": "Pharmacogenomic Panel"},
+        "subject": {"reference": "Patient/patient-004"},
+        "effectiveDateTime": "2026-04-10",
+        "conclusion": "CYP2C9 *2/*3 (Poor Metabolizer). VKORC1 -1639 AG (Intermediate Sensitivity). Combined CYP2C9/VKORC1 genotype: high warfarin sensitivity — substantial dose reduction recommended. CYP2D6 *1/*1. CYP2C19 *1/*1. DPYD wild-type."
+      }
+    }
+  ]
+}

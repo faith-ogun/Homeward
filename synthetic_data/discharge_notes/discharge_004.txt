@@ -1,0 +1,71 @@
+DISCHARGE INSTRUCTIONS
+======================
+
+Patient: Anya Petrov (HW-004)
+Procedure: Robotic Sigmoid Colectomy
+Surgery date: 24 April 2026
+Discharging surgeon: Mr. C. McGrath, Consultant Colorectal Surgeon
+Expected recovery: 4–6 weeks
+
+CO-MORBIDITIES OF NOTE
+----------------------
+- Chronic atrial fibrillation — anticoagulated with warfarin (target INR 2–3).
+- Recent pharmacogenomic panel: CYP2C9 *2/*3 + VKORC1 -1639 AG — high warfarin sensitivity.
+  Anticoagulation has been re-titrated; INR will be monitored closely.
+
+MEDICATIONS
+-----------
+1. Warfarin 5 mg orally once daily — DOSE WILL BE ADJUSTED PER INR. Patient is a CYP2C9 poor metaboliser with VKORC1 sensitivity; expected stable dose may be lower than usual. Bring INR results to every follow-up.
+2. Acetaminophen 500 mg orally every 6 hours as needed for pain. AVOID NSAIDs (ibuprofen, naproxen) — bleeding risk on warfarin.
+3. Docusate sodium 100 mg twice daily.
+
+DO NOT TAKE
+-----------
+- NSAIDs of any kind (ibuprofen, naproxen, celecoxib, ketorolac) — bleeding risk.
+- Aspirin unless explicitly directed.
+- Herbal supplements containing St John's Wort, gingko, or garlic extracts (warfarin interaction).
+
+DIET
+----
+- Soft diet progressing to normal as bowel function returns.
+- Avoid abrupt large changes in vitamin K intake (leafy greens) — keep intake consistent.
+- Stay well hydrated.
+
+ACTIVITY
+--------
+- Walk frequently — bowel recovery depends on it.
+- No heavy lifting (>10 lbs) for 4 weeks.
+- Avoid strenuous abdominal activity for 6 weeks.
+
+WOUND CARE
+----------
+- Port-site incisions and one extraction-site incision (4 cm).
+- Staples in extraction site — removal at follow-up day 10–14.
+- Keep dry for 48 hours; daily dressing changes thereafter.
+
+WHEN TO CALL THE SURGICAL TEAM URGENTLY
+---------------------------------------
+- Fever above 38°C.
+- Increasing abdominal pain or distension.
+- No passage of gas or stool for more than 3 days post-op.
+- Rectal bleeding (more than minor spotting).
+- Wound redness, swelling, drainage, or opening.
+- Sudden severe abdominal pain (possible anastomotic leak).
+- Unusual bruising or bleeding (gum bleeding, large bruises, blood in urine/stool, bloody nose lasting >15 min) — possible warfarin over-anticoagulation.
+- Chest pain or shortness of breath.
+
+INR MONITORING
+--------------
+- INR check: 1 May, 5 May, 12 May.
+- Anticoagulation clinic: 091-XXX-XXXX.
+
+FOLLOW-UP
+---------
+- Colorectal clinic: 8 May 2026 — wound check, staple removal, pathology discussion.
+- Oncology referral if pathology indicates need for adjuvant therapy.
+- Anticoagulation clinic for ongoing INR management.
+
+24-HOUR CONTACT
+---------------
+Colorectal ward: 061-XXX-XXXX
+Emergency: 999.
