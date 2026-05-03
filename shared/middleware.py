@@ -52,6 +52,42 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
                 pretty_body,
             )
 
+        # Rewrite Prompt Opinion's PascalCase JSON-RPC methods to A2A spec form.
+        # PO sends SendMessage / SendStreamingMessage; a2a-sdk expects message/send / message/stream.
+        method_map = {
+            "SendMessage": "message/send",
+            "SendStreamingMessage": "message/stream",
+            "GetTask": "tasks/get",
+            "CancelTask": "tasks/cancel",
+        }
+        if isinstance(parsed, dict) and parsed.get("method") in method_map:
+            original = parsed["method"]
+            parsed["method"] = method_map[original]
+            logger.info("METHOD_REWRITTEN from=%s to=%s", original, parsed["method"])
+
+        # Normalise PO's proto-style enums to A2A spec lowercase forms.
+        # role: ROLE_USER -> user, ROLE_AGENT -> agent
+        # part type: TEXT -> text (in case PO sends it)
+        role_map = {"ROLE_USER": "user", "ROLE_AGENT": "agent"}
+        try:
+            msg = parsed.get("params", {}).get("message")
+            if isinstance(msg, dict):
+                if msg.get("role") in role_map:
+                    msg["role"] = role_map[msg["role"]]
+                    logger.info("ROLE_NORMALISED to=%s", msg["role"])
+                for part in msg.get("parts", []) or []:
+                    if isinstance(part, dict):
+                        kind = part.get("kind") or part.get("type")
+                        if isinstance(kind, str) and kind.isupper():
+                            part["kind"] = kind.lower()
+        except (AttributeError, TypeError):
+            pass
+
+        # Re-serialise once after all rewrites
+        if isinstance(parsed, dict) and parsed:
+            body_bytes = json.dumps(parsed, ensure_ascii=False).encode("utf-8")
+            request._body = body_bytes
+
         # Bridge FHIR metadata
         fhir_key, fhir_data = extract_fhir_from_payload(parsed)
         if isinstance(parsed, dict):
@@ -72,9 +108,50 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
                 else:
                     logger.info("FHIR_NOT_FOUND_IN_PAYLOAD keys_checked=params.metadata,message.metadata")
 
-        # Agent card is always public
+        # Agent card is always public — also patch in supportedInterfaces
+        # (required by Prompt Opinion's parser, not emitted by current a2a-sdk).
         if request.url.path == "/.well-known/agent-card.json":
-            return await call_next(request)
+            response = await call_next(request)
+            try:
+                body = b""
+                async for chunk in response.body_iterator:
+                    body += chunk
+                card = json.loads(body.decode("utf-8"))
+                base_url = card.get("url") or ""
+                # supportedInterfaces — Prompt Opinion / A2A v1 format
+                card["supportedInterfaces"] = [
+                    {
+                        "url": base_url,
+                        "protocolBinding": "JSONRPC",
+                        "protocolVersion": "1.0",
+                    }
+                ]
+                card["preferredTransport"] = "JSONRPC"
+                card["protocolVersion"] = "1.0"
+                # securitySchemes — A2A v1 nested-key format expected by PO
+                if card.get("securitySchemes"):
+                    card["securitySchemes"] = {
+                        "apiKey": {
+                            "apiKeySecurityScheme": {
+                                "name": "X-API-Key",
+                                "location": "header",
+                                "description": "API key required to access this agent.",
+                            }
+                        }
+                    }
+                    card["security"] = [{"apiKey": []}]
+                new_body = json.dumps(card).encode("utf-8")
+                return JSONResponse(
+                    content=card,
+                    status_code=response.status_code,
+                    headers={"content-type": "application/json"},
+                )
+            except Exception as e:
+                logger.warning("agent_card_patch_failed error=%s — serving original", e)
+                return JSONResponse(
+                    content=json.loads(body.decode("utf-8")) if body else {},
+                    status_code=response.status_code,
+                )
 
         api_key = request.headers.get("X-API-Key")
 
@@ -102,4 +179,100 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
             "security_authorized path=%s method=%s key_prefix=%s",
             request.url.path, request.method, api_key[:6],
         )
-        return await call_next(request)
+
+        # Capture response so we can log it AND wrap Message-shaped results as Tasks
+        # (Prompt Opinion's external-agent client requires a Task envelope).
+        response = await call_next(request)
+        try:
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+
+            text = body.decode("utf-8", errors="replace")
+            logger.info("outgoing_response status=%s body=\n%s", response.status_code, text[:4000])
+
+            data = json.loads(text)
+            result = data.get("result") if isinstance(data, dict) else None
+
+            if isinstance(result, dict):
+                logger.info("RESPONSE_FIXUP_ENTERED keys=%s", list(result.keys()))
+                import uuid as _uuid
+
+                # A2A v1 specification — no `kind` discriminators on Task/Message/Part.
+                result.pop("kind", None)
+
+                def _strip_kind_from_parts(parts: list) -> list:
+                    out = []
+                    for p in parts or []:
+                        if isinstance(p, dict):
+                            out.append({k: v for k, v in p.items() if k != "kind"})
+                        else:
+                            out.append(p)
+                    return out
+
+                # Promote a bare Message-at-root to an artifact.
+                if "parts" in result and "artifacts" not in result:
+                    result_parts = result.pop("parts", [])
+                    result["artifacts"] = [{
+                        "artifactId": str(_uuid.uuid4()),
+                        "name": "response",
+                        "parts": _strip_kind_from_parts(result_parts),
+                    }]
+
+                for art in result.get("artifacts", []) or []:
+                    if isinstance(art, dict):
+                        art.pop("kind", None)
+                        art["parts"] = _strip_kind_from_parts(art.get("parts", []))
+
+                for msg in result.get("history", []) or []:
+                    if isinstance(msg, dict):
+                        msg.pop("kind", None)
+                        msg["parts"] = _strip_kind_from_parts(msg.get("parts", []))
+
+                # Required Task fields per spec: id, status. Add if missing.
+                if "taskId" in result and "id" not in result:
+                    result["id"] = result["taskId"]
+                if "id" not in result:
+                    result["id"] = str(_uuid.uuid4())
+                if "contextId" not in result:
+                    result["contextId"] = str(_uuid.uuid4())
+
+                # status.state — PO uses proto enums (ROLE_USER, SendMessage) so try
+                # the proto-style TASK_STATE_COMPLETED form for state too.
+                proto_state_map = {
+                    "completed":      "TASK_STATE_COMPLETED",
+                    "submitted":      "TASK_STATE_SUBMITTED",
+                    "working":        "TASK_STATE_WORKING",
+                    "input-required": "TASK_STATE_INPUT_REQUIRED",
+                    "canceled":       "TASK_STATE_CANCELED",
+                    "failed":         "TASK_STATE_FAILED",
+                    "rejected":       "TASK_STATE_REJECTED",
+                    "auth-required":  "TASK_STATE_AUTH_REQUIRED",
+                }
+                status = result.get("status") if isinstance(result.get("status"), dict) else {}
+                state = status.get("state", "completed")
+                if not state.startswith("TASK_STATE_"):
+                    state = proto_state_map.get(state, "TASK_STATE_COMPLETED")
+                status["state"] = state
+                result["status"] = status
+
+                # role on history messages → proto form
+                role_map_proto = {"user": "ROLE_USER", "agent": "ROLE_AGENT"}
+                for msg in result.get("history", []) or []:
+                    if isinstance(msg, dict) and msg.get("role") in role_map_proto:
+                        msg["role"] = role_map_proto[msg["role"]]
+
+                # PO checks $.result.task — wrap the Task under a "task" key per
+                # the A2A v1 specification's REST-style response shape.
+                data["result"] = {"task": result}
+                final_body = json.dumps(data)
+                logger.info("FINAL_WIRE_BODY=%s", final_body[:4000])
+                return JSONResponse(content=data, status_code=response.status_code)
+        except Exception as e:
+            logger.warning("response_wrap_failed error=%s — serving original", e)
+
+        return JSONResponse(
+            content=json.loads(body.decode("utf-8")) if body else {},
+            status_code=response.status_code,
+            headers={"content-type": "application/json"},
+        )

@@ -305,3 +305,131 @@ def get_recent_observations(category: str, tool_context: ToolContext) -> dict:
         "count":        len(observations),
         "observations": observations,
     }
+
+
+def get_procedures(tool_context: ToolContext) -> dict:
+    """
+    Retrieves the patient's procedures from the FHIR server.
+
+    Returns each procedure with its display name, performed date, and reason.
+    Used to determine which surgical procedure the patient had and when, so
+    Homeward can compute post-operative day and look up the recovery timeline.
+    """
+    ctx = _get_fhir_context(tool_context)
+    if isinstance(ctx, dict):
+        return ctx
+    fhir_url, fhir_token, patient_id = ctx
+
+    logger.info("tool_get_procedures patient_id=%s", patient_id)
+    try:
+        bundle = _fhir_get(
+            fhir_url, fhir_token, "Procedure",
+            params={"patient": patient_id, "_count": "20", "_sort": "-date"},
+        )
+    except httpx.HTTPStatusError as e:
+        return _http_error_result(e)
+    except Exception as e:
+        return _connection_error_result(e)
+
+    procedures = []
+    for entry in bundle.get("entry", []):
+        res  = entry.get("resource", {})
+        code = res.get("code", {})
+        performed = (
+            res.get("performedDateTime")
+            or (res.get("performedPeriod") or {}).get("start")
+        )
+        reasons = [r.get("text") for r in res.get("reasonCode", []) if r.get("text")]
+        procedures.append({
+            "procedure":      code.get("text") or _coding_display(code.get("coding", [])),
+            "snomed_codes":   [c.get("code") for c in code.get("coding", []) if c.get("code")],
+            "performed_date": performed,
+            "status":         res.get("status"),
+            "reason":         "; ".join(reasons) if reasons else None,
+        })
+
+    return {
+        "status":     "success",
+        "patient_id": patient_id,
+        "count":      len(procedures),
+        "procedures": procedures,
+    }
+
+
+def get_pgx_panel(tool_context: ToolContext) -> dict:
+    """
+    Retrieves pharmacogenomic (PGx) panel results for the patient from the FHIR server.
+
+    Queries DiagnosticReport resources in the genetics category and returns the
+    diplotype/phenotype conclusions parsed from the report. Use this to obtain
+    the patient's pharmacogenomic profile (CYP2D6, CYP2C19, CYP2C9, VKORC1, DPYD)
+    before running the pharmacogenomic_medication_review skill.
+    """
+    ctx = _get_fhir_context(tool_context)
+    if isinstance(ctx, dict):
+        return ctx
+    fhir_url, fhir_token, patient_id = ctx
+
+    logger.info("tool_get_pgx_panel patient_id=%s", patient_id)
+    try:
+        bundle = _fhir_get(
+            fhir_url, fhir_token, "DiagnosticReport",
+            params={"patient": patient_id, "category": "GE", "_count": "10", "_sort": "-date"},
+        )
+        # Some servers ignore the category filter — fall back to all reports
+        if not bundle.get("entry"):
+            bundle = _fhir_get(
+                fhir_url, fhir_token, "DiagnosticReport",
+                params={"patient": patient_id, "_count": "20", "_sort": "-date"},
+            )
+    except httpx.HTTPStatusError as e:
+        return _http_error_result(e)
+    except Exception as e:
+        return _connection_error_result(e)
+
+    reports = []
+    for entry in bundle.get("entry", []):
+        res = entry.get("resource", {})
+        code = res.get("code", {})
+        title = code.get("text") or _coding_display(code.get("coding", []))
+        # Only surface PGx-flavoured reports
+        is_pgx = any(
+            kw in (title or "").lower()
+            for kw in ("pharmacogenomic", "pgx", "pharmacogenetic", "drug-gene", "genomic")
+        )
+        if not is_pgx:
+            continue
+        reports.append({
+            "report_id":      res.get("id"),
+            "title":          title,
+            "effective_date": res.get("effectiveDateTime")
+                              or (res.get("effectivePeriod") or {}).get("start"),
+            "conclusion":     res.get("conclusion"),
+            "status":         res.get("status"),
+        })
+
+    # Parse the most recent report's conclusion into structured diplotypes (free-text format).
+    parsed_variants: list[str] = []
+    if reports:
+        import re
+        conclusion = reports[0].get("conclusion") or ""
+        # Match patterns like "CYP2D6 *4/*4", "VKORC1 -1639 GG", "DPYD wild-type"
+        for m in re.finditer(
+            r"(CYP2D6|CYP2C19|CYP2C9|CYP3A4|VKORC1|DPYD|UGT1A1|TPMT|SLCO1B1)"
+            r"\s*(?:-?\d+\s*[A-Z]?>?[A-Z]?\s*)?"
+            r"(\*\w+\s*/\s*\*\w+|\*\w+|AA|AG|GG|GA|wild-type)",
+            conclusion,
+            re.IGNORECASE,
+        ):
+            gene = m.group(1).upper()
+            allele = m.group(2).strip()
+            parsed_variants.append(f"{gene} {allele}")
+
+    return {
+        "status":          "success",
+        "patient_id":      patient_id,
+        "count":           len(reports),
+        "reports":         reports,
+        "parsed_variants": parsed_variants,
+        "variants_string": ", ".join(parsed_variants),
+    }

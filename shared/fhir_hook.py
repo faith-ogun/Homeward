@@ -46,6 +46,30 @@ def _coerce_fhir_data(value):
     return None
 
 
+def _deep_search_for_fhir(obj, depth=0, max_depth=8):
+    """Walk a nested object/dict tree looking for the fhir-context dict."""
+    if depth > max_depth or obj is None:
+        return None
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if isinstance(k, str) and FHIR_CONTEXT_KEY in k and isinstance(v, (dict, str)):
+                return v
+            found = _deep_search_for_fhir(v, depth + 1, max_depth)
+            if found:
+                return found
+    elif isinstance(obj, (list, tuple)):
+        for item in obj:
+            found = _deep_search_for_fhir(item, depth + 1, max_depth)
+            if found:
+                return found
+    elif hasattr(obj, "__dict__"):
+        try:
+            return _deep_search_for_fhir(vars(obj), depth + 1, max_depth)
+        except Exception:
+            return None
+    return None
+
+
 def _extract_metadata_sources(callback_context, llm_request) -> list:
     """Return candidate metadata dicts in priority order."""
     callback_metadata = getattr(callback_context, "metadata", None)
@@ -62,10 +86,20 @@ def _extract_metadata_sources(callback_context, llm_request) -> list:
         if isinstance(last, dict):
             content_metadata = last.get("metadata")
 
+    # Last-resort: deep-search both objects for any value keyed by the FHIR URI.
+    deep_cb  = _deep_search_for_fhir(callback_context)
+    deep_llm = _deep_search_for_fhir(llm_request)
+    deep_found = None
+    if isinstance(deep_cb, (dict, str)):
+        deep_found = {FHIR_CONTEXT_KEY: deep_cb}
+    elif isinstance(deep_llm, (dict, str)):
+        deep_found = {FHIR_CONTEXT_KEY: deep_llm}
+
     return [
         ("callback_context.metadata",                                  callback_metadata),
         ("callback_context.run_config.custom_metadata.a2a_metadata",   a2a_metadata),
         ("llm_request.contents[-1].metadata",                          content_metadata),
+        ("deep_search(callback_context|llm_request)",                  deep_found),
     ]
 
 

@@ -20,6 +20,8 @@ ENV/
 # Project reference docs (local only)
 CLAUDE.md
 HACKATHON.md
+deployment.txt
+devpost_post.txt
 
 # IDE
 .vscode/

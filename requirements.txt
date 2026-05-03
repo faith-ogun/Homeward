@@ -1,12 +1,12 @@
-# Core ADK framework + A2A server
-google-adk>=1.25.0
-a2a-sdk[http-server]>=0.3.0
+# Pinned to versions that match the working local environment
+google-adk==1.18.0
+a2a-sdk[http-server]==0.3.22
 
 # HTTP client used by FHIR tools
-httpx>=0.28.0
+httpx==0.28.1
 
 # Environment variable loading
-python-dotenv>=1.0.0
+python-dotenv==1.1.1
 
 # ASGI server
-uvicorn>=0.41.0
+uvicorn==0.38.0

@@ -621,20 +621,24 @@ PROCEDURES: dict[str, dict] = {
 def find_procedure(name: str) -> dict | None:
     """
     Find a procedure by name or alias. Case-insensitive.
-    Returns the procedure dict or None if not found.
+    Substring match in either direction so "Robotic Prostatectomy (da Vinci)"
+    matches "robotic prostatectomy".
     """
-    name_lower = name.strip().lower()
+    import re
+    name_lower = re.sub(r"\s*\([^)]*\)", "", name or "").strip().lower()
+    if not name_lower:
+        return None
 
-    # Direct key match
     if name_lower.replace(" ", "_") in PROCEDURES:
         return PROCEDURES[name_lower.replace(" ", "_")]
 
-    # Alias search
-    for proc_key, proc_data in PROCEDURES.items():
-        if name_lower == proc_data["display_name"].lower():
+    for proc_data in PROCEDURES.values():
+        display = proc_data["display_name"].lower()
+        if name_lower == display or display in name_lower or name_lower in display:
             return proc_data
         for alias in proc_data["aliases"]:
-            if name_lower == alias.lower() or name_lower in alias.lower():
+            alias_lower = alias.lower()
+            if name_lower == alias_lower or alias_lower in name_lower or name_lower in alias_lower:
                 return proc_data
 
     return None

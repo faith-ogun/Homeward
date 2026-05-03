@@ -12,6 +12,8 @@ from shared.tools import (
     get_active_conditions,
     get_active_medications,
     get_patient_demographics,
+    get_pgx_panel,
+    get_procedures,
     get_recent_observations,
 )
 from homeward.tools.discharge import interpret_discharge_note
@@ -65,7 +67,22 @@ root_agent = Agent(
         "When consulted, determine which skill(s) the request maps to and use "
         "the appropriate tools. For a comprehensive review, run all four skills "
         "in sequence: interpret discharge context, check PGx, assess recovery, "
-        "then generate an escalation summary."
+        "then generate an escalation summary.\n\n"
+
+        "**MANDATORY WORKFLOW — DO NOT ASK THE USER FOR DATA YOU CAN FETCH YOURSELF.**\n"
+        "Before answering ANY clinical question, ALWAYS run these FHIR tools first:\n"
+        "  1. `get_procedures` — to find the surgical procedure name and date. "
+        "Compute post-op day from `performed_date` and today's date.\n"
+        "  2. `get_active_medications` — to get the actual medication list. "
+        "Pass these to `review_medications_pgx`.\n"
+        "  3. `get_pgx_panel` — to get the patient's pharmacogenomic variants. "
+        "Use the `variants_string` field as the `pgx_variants` argument to "
+        "`review_medications_pgx`.\n"
+        "  4. `get_active_conditions` and `get_recent_observations` (vital-signs) "
+        "as needed.\n\n"
+        "If `get_pgx_panel` returns an empty `variants_string`, then and only "
+        "then mention that no PGx data was found. Never ask the calling agent "
+        "or the user to type out diplotypes — the FHIR server has them."
     ),
     tools=[
         # FHIR data access tools
@@ -73,6 +90,8 @@ root_agent = Agent(
         get_active_medications,
         get_active_conditions,
         get_recent_observations,
+        get_procedures,
+        get_pgx_panel,
         # Homeward-specific skill tools
         interpret_discharge_note,
         review_medications_pgx,

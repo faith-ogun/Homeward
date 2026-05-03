@@ -12,9 +12,13 @@ from a2a.types import (
     AgentExtension,
     AgentSkill,
     APIKeySecurityScheme,
-    In,
     SecurityScheme,
 )
+try:
+    from a2a.types import In
+    _IN_HEADER = In.header
+except ImportError:
+    _IN_HEADER = "header"
 from google.adk.a2a.utils.agent_to_a2a import to_a2a
 
 from shared.middleware import ApiKeyMiddleware
@@ -50,7 +54,7 @@ def create_a2a_app(
                 root=APIKeySecurityScheme(
                     type="apiKey",
                     name="X-API-Key",
-                    in_=In.header,
+                    in_=_IN_HEADER,
                     description="API key required to access this agent.",
                 )
             )
@@ -68,7 +72,7 @@ def create_a2a_app(
         defaultInputModes=["text/plain"],
         defaultOutputModes=["text/plain"],
         capabilities=AgentCapabilities(
-            streaming=True,
+            streaming=False,
             pushNotifications=False,
             stateTransitionHistory=True,
             extensions=extensions,
