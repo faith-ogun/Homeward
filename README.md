@@ -25,9 +25,9 @@ Built for [Agents Assemble — The Healthcare AI Endgame](https://agents-assembl
 
 ## How It Works
 
-Homeward is a single external A2A agent exposing four skills, consultable from any clinician workspace in Prompt Opinion.
+Homeward is a single external A2A agent exposing five skills, consultable from any clinician workspace in Prompt Opinion.
 
-### The Four Skills
+### The Five Skills
 
 | Skill | What It Does |
 |-------|-------------|
@@ -35,6 +35,7 @@ Homeward is a single external A2A agent exposing four skills, consultable from a
 | **Pharmacogenomic Medication Review** | Checks post-operative medications against the patient's pharmacogenomic profile and flags drug-gene interactions with CPIC-guided alternative recommendations |
 | **Recovery Check-In Assessment** | Compares patient-reported symptoms against procedure-specific expected recovery trajectory and pharmacogenomic context — returns on-track / watch / escalate classification |
 | **Escalation Summary Generator** | Generates structured GREEN / AMBER / RED clinical summary combining recovery assessment, pharmacogenomic flags, and recommended actions for the care team |
+| **FHIR Action Drafter** | When a pharmacogenomic alternative is warranted, drafts FHIR R4 resources (MedicationRequest + Communication) with `status="draft"` / `intent="proposal"` for clinician review — never auto-submits, never auto-prescribes |
 
 ### Clinical Data Sources
 
@@ -71,7 +72,7 @@ Pull patient context from FHIR
     ├── PGx panel — diplotypes parsed from DiagnosticReport conclusion
     └── Conditions, observations
     ▼
-Run the four skills in sequence
+Run the five skills in sequence
     ├── Deterministic data (recovery timelines, CPIC drug-gene table, ClinVar, red flags)
     └── LLM (Gemini 2.5 Flash) for interpretation and synthesis
     ▼
@@ -165,7 +166,7 @@ curl https://<your-ngrok-url>/.well-known/agent-card.json | jq .name
 
 1. **Workspace Hub** → External Agents → **Add Connection**
 2. Paste the ngrok URL (the base, no trailing slash)
-3. Click **Check** — PO pulls the agent card and shows the four skills
+3. Click **Check** — PO pulls the agent card and shows the five skills
 4. Set the API key (value of `HOMEWARD_API_KEY` from `.env`)
 5. Enable **FHIR R4 context** and select **Full Authority** under Patient Data Permissions
 6. **Save**
@@ -209,7 +210,8 @@ Pinned versions in `requirements.txt` — do not loosen them. `google-adk 1.18.0
 │       ├── discharge.py            Skill 1 — Discharge Note Interpreter
 │       ├── pgx.py                  Skill 2 — Pharmacogenomic Medication Review
 │       ├── recovery.py             Skill 3 — Recovery Check-In Assessment
-│       └── escalation.py           Skill 4 — Escalation Summary Generator
+│       ├── escalation.py           Skill 4 — Escalation Summary Generator
+│       └── action_drafter.py       Skill 5 — FHIR Action Drafter
 │
 ├── shared/                         Platform-shim / infra layer
 │   ├── app_factory.py              A2A ASGI app builder, agent card construction
@@ -278,4 +280,4 @@ Pinned versions in `requirements.txt` — do not loosen them. `google-adk 1.18.0
 
 ## License
 
-[MIT](LICENSE)
+Licensed under the [Apache License, Version 2.0](LICENSE).
