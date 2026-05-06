@@ -1,0 +1,30 @@
+{
+  "name": "homeward-demo-anim",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion animations for the Homeward demo video.",
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "render:stat1": "remotion render src/index.ts StatCard1 out/stat-card-1.mp4",
+    "render:stat2": "remotion render src/index.ts StatCard2 out/stat-card-2.mp4",
+    "render:stat3": "remotion render src/index.ts StatCard3 out/stat-card-3.mp4",
+    "render:spectrum": "remotion render src/index.ts SpectrumCard out/spectrum.mp4",
+    "render:patient": "remotion render src/index.ts PatientInsetCard out/patient-inset.mp4",
+    "render:pipeline": "remotion render src/index.ts PipelineCutaway out/pipeline.mp4",
+    "render:compare": "remotion render src/index.ts CompareCard out/compare.mp4",
+    "render:safety": "remotion render src/index.ts SafetyPanel out/safety.mp4",
+    "render:final": "remotion render src/index.ts FinalCard out/final.mp4",
+    "render:all": "npm run render:stat1 && npm run render:stat2 && npm run render:stat3 && npm run render:spectrum && npm run render:patient && npm run render:pipeline && npm run render:compare && npm run render:safety && npm run render:final"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -47,7 +47,19 @@ ngrok.yml
 competition/
 other/
 audit/
+devpost/
 
 # Distribution
 *.tar.gz
 *.whl
+
+# Node / Remotion (demo animations)
+node_modules/
+demo/out/
+demo/.remotion/
+
+# Logo working files (final assets only kept under homeward/static/)
+logo/
+
+# Misc local
+*.log

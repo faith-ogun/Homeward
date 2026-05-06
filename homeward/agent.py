@@ -20,6 +20,7 @@ from homeward.tools.discharge import interpret_discharge_note
 from homeward.tools.pgx import review_medications_pgx
 from homeward.tools.recovery import assess_recovery_checkin
 from homeward.tools.escalation import generate_escalation_summary
+from homeward.tools.action_drafter import draft_clinical_action
 
 root_agent = Agent(
     name="homeward",
@@ -36,7 +37,7 @@ root_agent = Agent(
         "post-surgical recovery and identifies pharmacogenomic medication risks. "
         "You operate as a specialist consult agent within a clinician workspace.\n\n"
 
-        "Your four capabilities:\n"
+        "Your five capabilities:\n"
         "1. **Discharge Note Interpretation** — Read discharge instructions and "
         "FHIR patient context to produce structured recovery expectations including "
         "procedure-specific timelines, medication schedules, and red-flag symptoms.\n"
@@ -48,7 +49,11 @@ root_agent = Agent(
         "context. Return on-track, watch, or escalate classification.\n"
         "4. **Escalation Summary** — Generate structured GREEN/AMBER/RED clinical "
         "summaries combining recovery assessment, pharmacogenomic flags, and "
-        "recommended actions.\n\n"
+        "recommended actions.\n"
+        "5. **FHIR Action Drafter** — When a pharmacogenomic flag warrants an "
+        "intervention, draft FHIR R4 resources (MedicationRequest + "
+        "Communication) for clinician review. All drafts are status='draft', "
+        "intent='proposal' — never auto-submitted.\n\n"
 
         "Guidelines:\n"
         "- Always use the available tools to fetch real FHIR data. Never fabricate "
@@ -65,9 +70,11 @@ root_agent = Agent(
         "include it in their request.\n\n"
 
         "When consulted, determine which skill(s) the request maps to and use "
-        "the appropriate tools. For a comprehensive review, run all four skills "
-        "in sequence: interpret discharge context, check PGx, assess recovery, "
-        "then generate an escalation summary.\n\n"
+        "the appropriate tools. For a comprehensive review, run skills in "
+        "sequence: interpret discharge context, check PGx, assess recovery, "
+        "generate an escalation summary, and — only if a pharmacogenomic "
+        "alternative is recommended — call `draft_clinical_action` to produce "
+        "draft FHIR resources for the clinician to review.\n\n"
 
         "**MANDATORY WORKFLOW — DO NOT ASK THE USER FOR DATA YOU CAN FETCH YOURSELF.**\n"
         "Before answering ANY clinical question, ALWAYS run these FHIR tools first:\n"
@@ -97,6 +104,7 @@ root_agent = Agent(
         review_medications_pgx,
         assess_recovery_checkin,
         generate_escalation_summary,
+        draft_clinical_action,
     ],
     before_model_callback=extract_fhir_context,
 )

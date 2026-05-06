@@ -12,9 +12,12 @@ All other endpoints require an X-API-Key header (see shared/middleware.py).
 import os
 
 from a2a.types import AgentSkill
+from starlette.routing import Route
+
 from shared.app_factory import create_a2a_app
 
 from .agent import root_agent
+from .landing import favicon, landing_page, logo_image
 
 a2a_app = create_a2a_app(
     agent=root_agent,
@@ -68,5 +71,23 @@ a2a_app = create_a2a_app(
             ),
             tags=["escalation", "summary", "alert", "clinical"],
         ),
+        AgentSkill(
+            id="fhir_action_drafter",
+            name="FHIR Action Drafter",
+            description=(
+                "Drafts FHIR R4 resources (MedicationRequest + Communication) "
+                "from a pharmacogenomic finding so a clinician can review and "
+                "approve them with one click. All resources are emitted with "
+                "status='draft' and intent='proposal' — never auto-submitted."
+            ),
+            tags=["FHIR", "MedicationRequest", "Communication", "draft", "last-mile"],
+        ),
     ],
 )
+
+# Public landing page + static assets. These respond only to GET; the A2A
+# JSON-RPC endpoint at the same path responds to POST. The ApiKeyMiddleware
+# allows these paths through without auth (see shared/middleware.py).
+a2a_app.routes.insert(0, Route("/", landing_page, methods=["GET"]))
+a2a_app.routes.insert(1, Route("/logo.png", logo_image, methods=["GET"]))
+a2a_app.routes.insert(2, Route("/favicon.ico", favicon, methods=["GET"]))

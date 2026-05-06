@@ -2,7 +2,11 @@
 Security middleware — API key authentication.
 
 Every request is blocked unless it carries a valid X-API-Key header.
-The only public endpoint is /.well-known/agent-card.json.
+Public endpoints (no auth required):
+  - GET /.well-known/agent-card.json   (A2A discovery)
+  - GET /                              (landing page)
+  - GET /logo.png                      (logo asset)
+  - GET /favicon.ico                   (favicon)
 """
 import json
 import logging
@@ -19,13 +23,15 @@ logger = logging.getLogger(__name__)
 
 LOG_FULL_PAYLOAD = os.getenv("LOG_FULL_PAYLOAD", "true").lower() == "true"
 
-# Load API keys from environment. Fall back to a dev key for local testing.
+# Load API keys from environment. No fallback — if HOMEWARD_API_KEY is unset,
+# every authenticated request is rejected. Set the env var in .env (local) or
+# via --set-env-vars (Cloud Run); never hardcode credentials in source.
 VALID_API_KEYS: set = {
     k for k in [
         os.getenv("HOMEWARD_API_KEY"),
     ]
     if k
-} or {"homeward-dev-key-123"}
+}
 
 
 class ApiKeyMiddleware(BaseHTTPMiddleware):
@@ -35,6 +41,13 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
+        # Public GET routes (landing page, logo, favicon) bypass auth entirely.
+        # The A2A JSON-RPC endpoint at "/" only handles POST, so this does not
+        # weaken protection of the agent.
+        PUBLIC_GET_PATHS = {"/", "/logo.png", "/favicon.ico"}
+        if request.method == "GET" and request.url.path in PUBLIC_GET_PATHS:
+            return await call_next(request)
+
         body_bytes = await request.body()
         body_text  = body_bytes.decode("utf-8", errors="replace")
         parsed     = {}
