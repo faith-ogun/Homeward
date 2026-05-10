@@ -371,6 +371,8 @@ def get_pgx_panel(tool_context: ToolContext) -> dict:
     fhir_url, fhir_token, patient_id = ctx
 
     logger.info("tool_get_pgx_panel patient_id=%s", patient_id)
+    bundle: dict = {}
+    diagnostic_report_error: dict | None = None
     try:
         bundle = _fhir_get(
             fhir_url, fhir_token, "DiagnosticReport",
@@ -383,9 +385,14 @@ def get_pgx_panel(tool_context: ToolContext) -> dict:
                 params={"patient": patient_id, "_count": "20", "_sort": "-date"},
             )
     except httpx.HTTPStatusError as e:
-        return _http_error_result(e)
+        # Don't early-exit on 403 — fall through to the Observation fallback
+        # below. The FHIR token may grant access to one resource type but not
+        # another (PO issues per-A2A-agent ACLs).
+        diagnostic_report_error = _http_error_result(e)
+        logger.info("get_pgx_panel diagnostic_report_failed status=%s — trying Observation fallback", e.response.status_code if e.response else "?")
     except Exception as e:
-        return _connection_error_result(e)
+        diagnostic_report_error = _connection_error_result(e)
+        logger.info("get_pgx_panel diagnostic_report_connection_failed — trying Observation fallback")
 
     reports = []
     for entry in bundle.get("entry", []):
@@ -410,6 +417,7 @@ def get_pgx_panel(tool_context: ToolContext) -> dict:
 
     # Parse the most recent report's conclusion into structured diplotypes (free-text format).
     parsed_variants: list[str] = []
+    sources: list[str] = []
     if reports:
         import re
         conclusion = reports[0].get("conclusion") or ""
@@ -424,6 +432,58 @@ def get_pgx_panel(tool_context: ToolContext) -> dict:
             gene = m.group(1).upper()
             allele = m.group(2).strip()
             parsed_variants.append(f"{gene} {allele}")
+        if parsed_variants:
+            sources.append("DiagnosticReport.conclusion")
+
+    # Fallback: if no DiagnosticReport conclusion was readable (some FHIR
+    # projections strip the conclusion text), try Observation resources
+    # carrying the genotype calls. We patched the synthetic bundles to emit
+    # one Observation per gene with code.text='<GENE> genotype' and
+    # valueCodeableConcept.text='<diplotype> (<phenotype>)'.
+    if not parsed_variants:
+        try:
+            obs_bundle = _fhir_get(
+                fhir_url, fhir_token, "Observation",
+                params={"patient": patient_id, "category": "laboratory", "_count": "100"},
+            )
+        except Exception as e:
+            logger.warning("get_pgx_panel observation_fallback_failed error=%s", e)
+            obs_bundle = {}
+
+        import re
+        for entry in obs_bundle.get("entry", []):
+            res = entry.get("resource", {})
+            code_text = (res.get("code") or {}).get("text", "")
+            value_text = ""
+            if "valueCodeableConcept" in res:
+                value_text = (res["valueCodeableConcept"].get("text")
+                              or _coding_display(res["valueCodeableConcept"].get("coding", [])) or "")
+            elif "valueString" in res:
+                value_text = res["valueString"] or ""
+
+            gene_match = re.match(
+                r"\s*(CYP2D6|CYP2C19|CYP2C9|CYP3A4|VKORC1|DPYD|UGT1A1|TPMT|SLCO1B1)",
+                code_text, re.IGNORECASE,
+            )
+            if not gene_match or not value_text:
+                continue
+            gene = gene_match.group(1).upper()
+            # value_text examples: "*4/*4 (Poor Metabolizer)", "-1639 GG (Normal Sensitivity)"
+            allele_match = re.search(
+                r"(?:-?\d+\s*[A-Z]?>?[A-Z]?\s*)?(\*\w+\s*/\s*\*\w+|\*\w+|AA|AG|GG|GA|wild-type)",
+                value_text, re.IGNORECASE,
+            )
+            if allele_match:
+                parsed_variants.append(f"{gene} {allele_match.group(1).strip()}")
+        if parsed_variants:
+            sources.append("Observation")
+
+    # If both DiagnosticReport AND Observation returned nothing AND the
+    # original DiagnosticReport call errored, surface the error so the
+    # LLM knows why no variants came back (vs. patient genuinely having
+    # no PGx panel on file).
+    if not parsed_variants and not reports and diagnostic_report_error:
+        return diagnostic_report_error
 
     return {
         "status":          "success",
@@ -432,4 +492,5 @@ def get_pgx_panel(tool_context: ToolContext) -> dict:
         "reports":         reports,
         "parsed_variants": parsed_variants,
         "variants_string": ", ".join(parsed_variants),
+        "sources":         sources,
     }

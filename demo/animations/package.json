@@ -10,6 +10,7 @@
     "render:stat3": "remotion render src/index.ts StatCard3 out/stat-card-3.mp4",
     "render:spectrum": "remotion render src/index.ts SpectrumCard out/spectrum.mp4",
     "render:patient": "remotion render src/index.ts PatientInsetCard out/patient-inset.mp4",
+    "render:patient:alpha": "remotion render src/index.ts PatientInsetCard out/patient-inset.mov --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --image-format=png",
     "render:pipeline": "remotion render src/index.ts PipelineCutaway out/pipeline.mp4",
     "render:compare": "remotion render src/index.ts CompareCard out/compare.mp4",
     "render:safety": "remotion render src/index.ts SafetyPanel out/safety.mp4",

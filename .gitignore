@@ -57,6 +57,17 @@ devpost/
 node_modules/
 demo/out/
 demo/.remotion/
+demo/animations/out/
+demo/animations/.remotion/
+
+# Demo working files (large recordings, iMovie library, OpenScreen scratch)
+demo/Homeward.imovielibrary/
+demo/*.mov
+demo/*.mp4
+demo/*.m4a
+demo/*.openscreen
+demo/OpenScreen BG*
+demo/2026-*.mp4
 
 # Logo working files (final assets only kept under homeward/static/)
 logo/

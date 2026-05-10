@@ -187,6 +187,246 @@
         "method": "POST",
         "url": "DiagnosticReport"
       }
+    },
+    {
+      "fullUrl": "urn:uuid:9c703606-24b5-4ee9-8179-bed3ca063ce5",
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84413-4",
+              "display": "Genotype display name"
+            }
+          ],
+          "text": "CYP2D6 genotype"
+        },
+        "subject": {
+          "reference": "urn:uuid:40ba973c-c9f9-5e82-9b5e-b0e9172745be"
+        },
+        "effectiveDateTime": "2026-04-20",
+        "valueCodeableConcept": {
+          "text": "*4/*4 (Poor Metabolizer)"
+        },
+        "note": [
+          {
+            "text": "CYP2D6 *4/*4 \u2014 Poor Metabolizer"
+          }
+        ],
+        "interpretation": [
+          {
+            "text": "Poor Metabolizer"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:1528c2c1-ca59-46e0-b3df-3352d06ec2f2",
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84413-4",
+              "display": "Genotype display name"
+            }
+          ],
+          "text": "CYP2C19 genotype"
+        },
+        "subject": {
+          "reference": "urn:uuid:40ba973c-c9f9-5e82-9b5e-b0e9172745be"
+        },
+        "effectiveDateTime": "2026-04-20",
+        "valueCodeableConcept": {
+          "text": "*1/*1 (Normal Metabolizer)"
+        },
+        "note": [
+          {
+            "text": "CYP2C19 *1/*1 \u2014 Normal Metabolizer"
+          }
+        ],
+        "interpretation": [
+          {
+            "text": "Normal Metabolizer"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:7d1eb985-98e2-40d4-b72a-97c119664b44",
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84413-4",
+              "display": "Genotype display name"
+            }
+          ],
+          "text": "CYP2C9 genotype"
+        },
+        "subject": {
+          "reference": "urn:uuid:40ba973c-c9f9-5e82-9b5e-b0e9172745be"
+        },
+        "effectiveDateTime": "2026-04-20",
+        "valueCodeableConcept": {
+          "text": "*1/*1 (Normal)"
+        },
+        "note": [
+          {
+            "text": "CYP2C9 *1/*1 \u2014 Normal"
+          }
+        ],
+        "interpretation": [
+          {
+            "text": "Normal"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:32975326-4b71-4ecf-8e1d-cdf7d941f781",
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84413-4",
+              "display": "Genotype display name"
+            }
+          ],
+          "text": "VKORC1 genotype"
+        },
+        "subject": {
+          "reference": "urn:uuid:40ba973c-c9f9-5e82-9b5e-b0e9172745be"
+        },
+        "effectiveDateTime": "2026-04-20",
+        "valueCodeableConcept": {
+          "text": "-1639 GG (Normal Sensitivity)"
+        },
+        "note": [
+          {
+            "text": "VKORC1 -1639 GG \u2014 Normal Sensitivity"
+          }
+        ],
+        "interpretation": [
+          {
+            "text": "Normal Sensitivity"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:3412abc3-6ff2-4424-8145-8ef5b00ce55f",
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "laboratory",
+                "display": "Laboratory"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "84413-4",
+              "display": "Genotype display name"
+            }
+          ],
+          "text": "DPYD genotype"
+        },
+        "subject": {
+          "reference": "urn:uuid:40ba973c-c9f9-5e82-9b5e-b0e9172745be"
+        },
+        "effectiveDateTime": "2026-04-20",
+        "valueCodeableConcept": {
+          "text": "wild-type"
+        },
+        "note": [
+          {
+            "text": "DPYD wild-type"
+          }
+        ]
+      },
+      "request": {
+        "method": "POST",
+        "url": "Observation"
+      }
     }
   ]
 }
